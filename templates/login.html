@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="1060855215330-s1o9hp9l0vp0os6uvt3al6d1b2sh5ct9.apps.googleusercontent.com">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+
+
+</head>
+
+
+<body>  
+
+
+<!-- GOOGLE PLUS SIGN IN BUTTON-->
+<!--helloo-->
+          
+<div class="g-signin2" data-onsuccess="onSignIn" id="signInButton" data-theme="dark"></div>
+<div id="result"></div>
+<a href="#" onclick="signOut();" id="signOutButton">Sign out</a>
+
+<fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+        <a href="javascript:sendTokenToServer()">Login With facebook</a>
+    </fb:login-button> 
+    
+
+<!--END GOOGLE PLUS SIGN IN BUTTON -->
+
+  </body>
+  
+    
+  
+  <script type="text/javascript">
+    function onSignIn(googleUser) {
+        // Get the user id_token after the user signs it to his google account
+        var id_token = googleUser.getAuthResponse().id_token;
+
+        if (id_token) {
+            // Hide the sign-in button now that the user is authorized
+            // $('#signInButton').attr('style', 'display: none');
+            // $('#signOutButton').attr('style', 'display: True');
+            // Sending a post request
+            $.ajax({
+                type: 'POST',
+                url: $(location).attr('origin') + '/gconnect?state={{ STATE }}',
+                processData: false,
+                data: id_token,
+                contentType: 'application/octet-stream; charset=utf-8',
+                success: function(result){
+                    if (result) {
+                        $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+                        setTimeout(
+                            function() {
+                            window.location.href = "/";
+                        },
+                         4000);
+                    } else {
+                        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+                    }
+                }
+            });
+        }
+    }
+</script>
+<script>
+    function signOut() {
+        // $('#signOutButton').attr('style', 'display: none');
+        // $('#signInButton').attr('style', 'display: True');
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+            console.log(auth2);
+            console.log('User signed out.');
+            $.ajax({
+                type: 'POST',
+                url: $(location).attr('origin') + '/disconnect',
+                processData: false,                
+                contentType: 'application/octet-stream; charset=utf-8',
+                success: function(result){
+                    if (result) {
+                        $('#result').html('Logout Successful!</br>'+ result + '</br>Redirecting...')
+                        setTimeout(
+                            function() {
+                            window.location.href = "/";
+                        }, 
+                        4000);
+                    } else {
+                        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+                    }
+                }
+            });
+        });
+    }
+</script>
+
+
+<script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '806072569763130',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v3.3'
+      });
+        
+      FB.AppEvents.logPageView();   
+        
+    };
+  
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+
+    function sendTokenToServer() {
+        var access_token = FB.getAuthResponse()['accessToken'];
+        console.log(access_token)
+        console.log('Welcome!  Fetching your information.... ');
+        FB.api('/me', function(response) {
+        console.log('Successful login for: ' + response.name);
+        $.ajax({
+        type: 'POST',
+        url: '/fbconnect?state={{STATE}}',
+        processData: false,
+        data: access_token,
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+            console.log("Result = ", result);
+        // Handle or verify the server response if necessary.
+            if (result) {
+            $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+            setTimeout(function() {
+            window.location.href = "/restaurant";
+            }, 4000);
+            
+            } else {
+                $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+                }
+            }
+        });
+    });
+  }
+  
+
+    function checkLoginState() {
+        FB.getLoginStatus(function(response) {
+            statusChangeCallback(response);
+            });
+    }
+
+  </script>
+
+
+  </html>
