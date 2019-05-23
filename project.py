@@ -149,8 +149,8 @@ def disconnect():
 #   del login_session['email']
 #   del login_session['picture']
 
-  response = make_response(json.dumps('Successfully disconnected.'), 200)
-  response.headers['Content-Type'] = 'application/json'
+#   response = make_response(json.dumps('Successfully disconnected.'), 200)
+#   response.headers['Content-Type'] = 'application/json'
   
 
   if result[0]['status'] == '200':
